@@ -1,0 +1,15 @@
+# value for log level and console log level:
+# "DEBUG", "INFO", "WARNING", "ERROR","FATAL"
+logLevel: DEBUG
+consoleLevel: DEBUG
+# log flush interval time, like 30s, 5m, 1h etc.
+flushInterval: 10s
+
+topics:
+    4g_info: 3
+    23g_info: 3
+
+broker_list:
+- 127.0.0.1:9092
+- 127.0.0.1:9093
+- 127.0.0.1:9094
