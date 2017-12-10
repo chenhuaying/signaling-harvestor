@@ -1,0 +1,6 @@
+run/
+signaling-harvestor
+*.log.*
+signaling-harvestor.DEBUG
+signaling-harvestor.INFO
+signaling-harvestor.WARNING
