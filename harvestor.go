@@ -41,10 +41,22 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 	lasttime := time.Now().Unix()
 	threshold := RecordThreshold
 	timeThreshold := TimeThreshold
+	rawCount := 0
+	rawSize := 0
+
 	for {
 		select {
 		case msg := <-h.handler.Messages():
 			log.Debugf("Consumed message topic %s, Partition %d, offset %d, key(%s), msg(%s)\n", msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
+			rawCount++
+			now := time.Now().Unix()
+			rawSize += len(msg.Value)
+			if count%threshold == 0 || now-lasttime >= timeThreshold {
+				log.Infof("Consumed raw message topic %s, Partition %d, offset %d, Readed %d, size %d\n", msg.Topic, msg.Partition, msg.Offset, rawCount, rawSize)
+				rawCount = 0
+				rawSize = 0
+			}
+
 			fields, err := ParseSignaling(msg.Value)
 			if err != nil {
 				log.Warning(err)
@@ -63,15 +75,19 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 				buf.Reset()
 
 				count++
-				now := time.Now().Unix()
 				if count%threshold == 0 || now-lasttime >= timeThreshold {
 					record <- &Record{Offset: msg.Offset, Partition: msg.Partition}
 					if count%threshold == 0 {
-						log.Infof("Consumed message topic %s, Partition %d, offset %d, Processed(%d)\n", msg.Topic, msg.Partition, msg.Offset, count)
+						log.Infof("Consumed message topic %s, Partition %d, offset %d, Processed %d\n", msg.Topic, msg.Partition, msg.Offset, count)
 						count = 0
 					}
 				}
 			}
+
+			if now-lasttime >= timeThreshold {
+				lasttime = now
+			}
+
 		case err := <-h.handler.Errors():
 			if err != nil {
 				log.Errorf("Topic %s, Partition: %d, error: %s\n", err.Topic, err.Partition, err.Err)
