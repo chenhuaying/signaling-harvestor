@@ -2,12 +2,16 @@ package main
 
 import (
 	"bytes"
+	"time"
 
 	"github.com/Shopify/sarama"
 	log "github.com/chenhuaying/glog"
 )
 
-const RecordThreshold = 1000
+const (
+	RecordThreshold       = 1000
+	TimeThreshold   int64 = 1
+)
 
 var Topic2TypeTable map[string]string = map[string]string{
 	"4g_info":  "4G",
@@ -34,7 +38,9 @@ func newHarvestor(partition int, h sarama.PartitionConsumer) *harvestor {
 func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record) {
 	var buf bytes.Buffer
 	count := 0
+	lasttime := time.Now().Unix()
 	threshold := RecordThreshold
+	timeThreshold := TimeThreshold
 	for {
 		select {
 		case msg := <-h.handler.Messages():
@@ -56,10 +62,15 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 				output <- item
 				buf.Reset()
 
-				if count%threshold == 0 {
-					record <- &Record{Offset: msg.Offset, Partition: msg.Partition}
-				}
 				count++
+				now := time.Now().Unix()
+				if count%threshold == 0 || now-lasttime >= timeThreshold {
+					record <- &Record{Offset: msg.Offset, Partition: msg.Partition}
+					if count%threshold == 0 {
+						log.Infof("Consumed message topic %s, Partition %d, offset %d, Processed(%d)\n", msg.Topic, msg.Partition, msg.Offset, count)
+						count = 0
+					}
+				}
 			}
 		case err := <-h.handler.Errors():
 			if err != nil {

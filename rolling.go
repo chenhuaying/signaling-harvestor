@@ -49,13 +49,16 @@ func (r *rollingFile) roll() error {
 		r.file = nil
 	}
 	r.fileFrag = suffix
-	r.filePath = fmt.Sprintf("%s.%s", r.basePath, r.fileFrag)
 
-	if dir, _ := filepath.Split(r.basePath); dir != "" && dir != "." {
+	dir, _ := filepath.Split(r.basePath)
+	if dir != "" && dir != "." {
 		if err := os.MkdirAll(dir, 0777); err != nil {
 			return err
 		}
 	}
+
+	filename := fmt.Sprintf("%s.txt", r.fileFrag)
+	r.filePath = filepath.Join(dir, filename)
 
 	f, err := os.OpenFile(r.filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
