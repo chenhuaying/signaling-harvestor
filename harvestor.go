@@ -63,7 +63,7 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 			}
 		case err := <-h.handler.Errors():
 			if err != nil {
-				log.Error("Topic %s, Partition: %d, error: %s\n", err.Topic, err.Partition, err.Err)
+				log.Errorf("Topic %s, Partition: %d, error: %s\n", err.Topic, err.Partition, err.Err)
 			} else {
 				log.Error("Unkonw Error")
 			}
