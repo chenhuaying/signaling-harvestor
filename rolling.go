@@ -32,11 +32,11 @@ var ErrClosedRollingFile = errors.New("rolling file is closed")
 type RollingFormat string
 
 const (
-	MonthlyRolling  RollingFormat = "2006-01"
-	DailyRolling                  = "2006-01-02"
-	HourlyRolling                 = "2006-01-02-15"
-	MinutelyRolling               = "2006-01-02-15-04"
-	SecondlyRolling               = "2006-01-02-15-04-05"
+	MonthlyRolling  RollingFormat = "200601"
+	DailyRolling                  = "20060102"
+	HourlyRolling                 = "2006010215"
+	MinutelyRolling               = "200601021504"
+	SecondlyRolling               = "20060102150405"
 )
 
 func (r *rollingFile) roll() error {
