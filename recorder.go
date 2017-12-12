@@ -61,8 +61,8 @@ func (r *Recorder) RecordOffsets() {
 	if err != nil {
 		log.Error("Encoding data failed")
 	} else {
-		r.source.Write(dataBytes)
 		r.source.Seek(0, os.SEEK_SET)
+		r.source.Write(dataBytes)
 	}
 }
 
@@ -78,8 +78,8 @@ func (r *Recorder) RecordOffsetsBackend() {
 				if err != nil {
 					log.Error("Encoding data failed")
 				} else {
-					r.source.Write(dataBytes)
 					r.source.Seek(0, os.SEEK_SET)
+					r.source.Write(dataBytes)
 				}
 			}
 		}
