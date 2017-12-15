@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"time"
 
 	"github.com/Shopify/sarama"
@@ -36,7 +35,6 @@ func newHarvestor(partition int, h sarama.PartitionConsumer) *harvestor {
 }
 
 func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record) {
-	var buf bytes.Buffer
 	count := 0
 	lasttime := time.Now().Unix()
 	threshold := RecordThreshold
@@ -57,30 +55,14 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 				rawSize = 0
 			}
 
-			fields, err := ParseSignaling(msg.Value)
-			if err != nil {
-				log.Warning(err)
-			} else {
-				for _, f := range fields {
-					buf.Write(f)
-					buf.WriteString("|")
-				}
-				buf.WriteString(flag)
-				buf.WriteString("\n")
-				log.Debug(buf.String())
-				tmp := buf.Bytes()
-				item := make([]byte, len(tmp))
-				copy(item, tmp)
-				output <- item
-				buf.Reset()
+			c := ParseSignalings(msg.Value, flag, output)
 
-				count++
-				if count%threshold == 0 || now-lasttime >= timeThreshold {
-					record <- &Record{Offset: msg.Offset, Partition: msg.Partition}
-					if count%threshold == 0 {
-						log.Infof("Consumed message topic %s, Partition %d, offset %d, Processed %d\n", msg.Topic, msg.Partition, msg.Offset, count)
-						count = 0
-					}
+			count += c
+			if count%threshold == 0 || now-lasttime >= timeThreshold {
+				record <- &Record{Offset: msg.Offset, Partition: msg.Partition}
+				if count%threshold == 0 {
+					log.Infof("Consumed message topic %s, Partition %d, offset %d, Processed %d\n", msg.Topic, msg.Partition, msg.Offset, count)
+					count = 0
 				}
 			}
 
@@ -141,6 +123,9 @@ func (g *HarvestorGroup) Init() error {
 		offset := sarama.OffsetNewest
 		if !useNewest {
 			offset = offsets[int32(i)]
+			if offset == 0 {
+				offset = sarama.OffsetNewest
+			}
 		}
 		c, err := g.client.ConsumePartition(g.topic, int32(i), offset)
 		if err != nil {
