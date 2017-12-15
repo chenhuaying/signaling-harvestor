@@ -36,6 +36,7 @@ func newHarvestor(partition int, h sarama.PartitionConsumer) *harvestor {
 
 func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record) {
 	count := 0
+	errCount := 0
 	lasttime := time.Now().Unix()
 	threshold := RecordThreshold
 	timeThreshold := TimeThreshold
@@ -55,7 +56,7 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 				rawSize = 0
 			}
 
-			c := ParseSignalings(msg.Value, flag, output)
+			c, ec := ParseSignalings(msg.Value, flag, output)
 
 			count += c
 			if count%threshold == 0 || now-lasttime >= timeThreshold {
@@ -64,6 +65,11 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 					log.Infof("Consumed message topic %s, Partition %d, offset %d, Processed %d\n", msg.Topic, msg.Partition, msg.Offset, count)
 					count = 0
 				}
+			}
+			errCount += ec
+			if errCount%threshold == 0 {
+				log.Infof("Consumed message topic %s, Partition %d, ", msg.Topic, msg.Partition, errCount)
+				errCount = 0
 			}
 
 			if now-lasttime >= timeThreshold {

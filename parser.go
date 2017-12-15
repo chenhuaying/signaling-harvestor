@@ -7,15 +7,17 @@ import (
 	log "github.com/chenhuaying/glog"
 )
 
-func ParseSignalings(msgs []byte, flag string, output chan []byte) int {
+func ParseSignalings(msgs []byte, flag string, output chan []byte) (int, int) {
 	msg_list := bytes.Split(msgs, []byte("\n"))
 
 	count := 0
+	errCount := 0
 	var buf bytes.Buffer
 	for _, msg := range msg_list {
 		fields, err := ParseSignaling(msg)
 		if err != nil {
-			log.Warningf("ParseSignaling Failed! error: %s\n", err)
+			log.Debugf("ParseSignaling Failed! error: %s\n", err)
+			errCount++
 			continue
 		} else {
 			for _, f := range fields {
@@ -34,7 +36,7 @@ func ParseSignalings(msgs []byte, flag string, output chan []byte) int {
 		}
 	}
 
-	return count
+	return count, errCount
 }
 
 func ParseSignaling(msg []byte) ([][]byte, error) {
