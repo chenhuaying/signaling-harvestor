@@ -144,6 +144,7 @@ func (g *HarvestorGroup) Init() error {
 		}
 		c, err := g.client.ConsumePartition(g.topic, int32(i), offset)
 		if err != nil {
+			log.Errorf("Init %s partition %d, offset %d failed! error: %s\n", g.topic, i, offset, err)
 			return err
 		}
 
