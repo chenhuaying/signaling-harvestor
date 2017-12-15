@@ -56,7 +56,10 @@ func main() {
 		if harvestorGroup == nil {
 			panic("Create HarvestorGroup failed!")
 		}
-		harvestorGroup.Init()
+		err := harvestorGroup.Init()
+		if err != nil {
+			log.Errorf("Init %s harvestor group failed! error: %s\n", topic, err)
+		}
 		harvestorGroup.Harvest(publisher.msgCh)
 	}
 
