@@ -16,7 +16,7 @@ func ParseSignalings(msgs []byte, flag string, output chan []byte) (int, int) {
 	for _, msg := range msg_list {
 		fields, err := ParseSignaling(msg)
 		if err != nil {
-			log.Debugf("ParseSignaling Failed! error: %s\n", err)
+			log.Debugf("ParseSignaling Failed! msg(%s) error: %s\n", msg, err)
 			errCount++
 			continue
 		} else {
