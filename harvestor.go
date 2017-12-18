@@ -68,7 +68,7 @@ func (h *harvestor) harvest(flag string, output chan []byte, record chan *Record
 			}
 			errCount += ec
 			if errCount%threshold == 0 {
-				log.Infof("Consumed message topic %s, Partition %d, ", msg.Topic, msg.Partition, errCount)
+				log.Infof("Consumed error message topic %s, Partition %d, count %d", msg.Topic, msg.Partition, errCount)
 				errCount = 0
 			}
 
