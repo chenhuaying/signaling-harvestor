@@ -17,8 +17,8 @@ func TestParseMsgs(t *testing.T) {
 		fmt.Printf("msg(%s)\n", msg)
 	}
 	output := make(chan []byte, 1024)
-	c := ParseSignalings(msgs, "23G", output)
-	fmt.Println(c)
+	c, errCount := ParseSignalings(msgs, "23G", output)
+	fmt.Println(c, errCount)
 
 	i := 0
 	f, err := os.OpenFile("test_parse.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
