@@ -23,6 +23,9 @@ func ParseSignalings(msgs []byte, flag string, output chan []byte) (int, int) {
 			errCount++
 			continue
 		} else {
+			if !Filter(string(fields[0]), string(fields[1]), string(fields[3])) {
+				continue
+			}
 			for _, f := range fields {
 				buf.Write(f)
 				buf.WriteString("|")
